@@ -1,4 +1,4 @@
-# be sure to export TP_DIR = <thread_pool_c path>
+# be sure to export TP_DIR=<thread_pool_c path>
 CFLAGS := -O3 -I$(TP_DIR) -fPIC
 TCPS_OBJ := tcp_server.o
 

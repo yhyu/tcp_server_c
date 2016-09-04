@@ -1,4 +1,4 @@
-# be sure to export TP_DIR = <thread_pool_c path>
+# be sure to export TP_DIR=<thread_pool_c path>
 TCPSRV_DIR = ..
 CFLAGS := -O3 -I$(TP_DIR) -I$(TCPSRV_DIR) -fPIC
 NCP_S_OBJ := netcopy_s.o
