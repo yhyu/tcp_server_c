@@ -61,7 +61,7 @@ For simple usage, please refer to test program, [tcp_server_test.c](https://gith
 
 ## Netcopy example
 
-[Netcpy] (https://github.com/yhyu/tcp_server_c/tree/master/example) example is a server/client example to copy local file to remove. This is just a simple example, and only support single file copy. It might be enhanced to support multiple files and remove to remove copy in future.
+[Netcpy] (https://github.com/yhyu/tcp_server_c/tree/master/example) example is a server/client example to copy local file to remote. This is just a simple example, and only support single file copy. It might be enhanced to support multiple files and remote to remote copy in future.
 
 Start server (on remove side):
 ```
