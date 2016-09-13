@@ -50,6 +50,13 @@ static act_state_t echo_handler(int fd, void* ctxt)
     return ACT_CLOSED;
 }
 
+static act_state_t err_handler(int fd, void* ctxt)
+{
+    free(ctxt);
+    close(fd);
+    return ACT_CLOSED;
+}
+
 void test_basic()
 {
     // prepare thread pool for tcp server
@@ -64,7 +71,7 @@ void test_basic()
     const char request[] = "Hello TCP Server!";
     char* response = NULL;
     unsigned short port = 12345;
-    server_ctxt_t* srv_ctxt = create_tcp_server(tp_ctxt, 0, "0.0.0.0" , port, get_new_context, echo_handler, &response);
+    server_ctxt_t* srv_ctxt = create_tcp_server(tp_ctxt, 0, 0, "0.0.0.0" , port, get_new_context, echo_handler, err_handler, &response);
     if (!srv_ctxt) {
         printf("%s, Fail: create_tcp_server fail.\n", __func__);
         destroy_thread_pool(tp_ctxt);

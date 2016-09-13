@@ -130,6 +130,24 @@ static act_state_t ncp_handler(int fd, void* ctxt)
     return ACT_CLOSED;
 }
 
+static act_state_t err_handler(int fd, void* ctxt)
+{
+    ssize_t read_len = 0;
+    read_ctxt_t* rctxt = (read_ctxt_t*)ctxt;
+
+    if (rctxt->data) {
+        munmap(rctxt->data, rctxt->header.file_len);
+        rctxt->data = NULL;
+    }
+    if (rctxt->target_fd != -1) {
+        close(rctxt->target_fd);
+        rctxt->target_fd = -1;
+    }
+    free(ctxt);
+    close(fd);
+    return ACT_CLOSED;
+}
+
 void start_ncpd(const char* ip, unsigned short port)
 {
     tp_strategy_t strategy = {
@@ -148,7 +166,7 @@ void start_ncpd(const char* ip, unsigned short port)
     }
 
     // prepare server
-    server_ctxt_t* srv_ctxt = create_tcp_server(tp_ctxt, 1, ip , port, get_new_context, ncp_handler, NULL);
+    server_ctxt_t* srv_ctxt = create_tcp_server(tp_ctxt, 1, 1, ip , port, get_new_context, ncp_handler, err_handler, NULL);
 }
 
 const char usages[] = "\n\tUsage %s -p listen_port [-s server_ip]\n"        \

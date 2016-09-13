@@ -33,14 +33,17 @@ typedef struct event_data
     int     sfd;    // socket fd
     int     efd;    // epoll fd
     event_handler   on_action;  // reaction handler
+    event_handler   on_error;
     void*           act_args;   // handler args
 } event_data_t;
 
 typedef struct accept_data
 {
+    int             keep_alive;
     event_data_t    ev_data;
     get_client_ctxt cln_get_ctxt;
     event_handler   cln_action;
+    event_handler   cln_error;
     void*           cln_args;
 } accept_data_t;
 
@@ -52,9 +55,9 @@ typedef struct server_ctxt
 } server_ctxt_t;
 
 server_ctxt_t* create_tcp_server(
-    tp_context_t* tp_ctxt, int sync,
+    tp_context_t* tp_ctxt, int sync, int keep_alive,
     const char* ip, unsigned short port,
     get_client_ctxt new_client,
-    event_handler handler, void* args);
+    event_handler act_h, event_handler err_h, void* args);
 
 void destroy_tcp_server(server_ctxt_t* srv_ctxt);

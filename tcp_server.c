@@ -72,7 +72,12 @@ static act_state_t on_accept(int fd, void* args)
         cln_ev_data->sfd = cfd;
         cln_ev_data->efd = ev_data->efd;
         cln_ev_data->on_action = apt_data->cln_action;
+        cln_ev_data->on_error = apt_data->cln_error;
         cln_ev_data->act_args = cln_ctxt;
+
+        // set keep alive
+        if (apt_data->keep_alive)
+            setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, &apt_data->keep_alive, sizeof(int));
 
         // add the client to waiting queue
         struct epoll_event evt = {
@@ -138,7 +143,12 @@ static int multiplexer(int efd, tp_context_t* tp_ctxt)
             {
                 perror("epoll error");
 
-                close(ev_data->sfd);
+                if (ev_data->on_error)
+                    ev_data->on_error(ev_data->sfd, ev_data->act_args);
+                else
+                    close(ev_data->sfd);
+
+                memset(ev_data, 0, sizeof(event_data_t));
                 free(ev_data);
                 continue;
             }
@@ -198,10 +208,10 @@ static void listen_worker(void* args)
 }
 
 server_ctxt_t* create_tcp_server(
-    tp_context_t* tp_ctxt, int sync,
+    tp_context_t* tp_ctxt, int sync, int keep_alive,
     const char* ip, unsigned short port,
     get_client_ctxt new_client,
-    event_handler handler, void* args)
+    event_handler act_h, event_handler err_h, void* args)
 {
     int efd = epoll_create1(0);
     if (efd == -1) {
@@ -230,10 +240,13 @@ server_ctxt_t* create_tcp_server(
         ev_data->sfd = sfd;
         ev_data->efd = efd;
         ev_data->on_action = on_accept;
+        ev_data->on_error = NULL;
         ev_data->act_args = acp_data;
 
+        acp_data->keep_alive = keep_alive;
         acp_data->cln_get_ctxt = new_client;
-        acp_data->cln_action = handler;
+        acp_data->cln_action = act_h;
+        acp_data->cln_error = err_h;
         acp_data->cln_args = args;
 
         struct epoll_event evt = {

@@ -50,11 +50,13 @@ tp_context_t* tp_ctxt = create_thread_pool(&strategy);
 server_ctxt_t* srv_ctxt = create_tcp_server(
     tp_ctxt,        // thread pool
     0,              // 0: non-blocking mode; 1: blocking mode
+    0,              // 1: enable keep alive; 0: system settings
     "0.0.0.0",      // ip address to listen (here is ALL)
     port,           // listen port
     get_new_context,// new context creation callback, it's called when a new client is
                     // connected. The return value will be passed in data receiving callback.
     echo_handler,   // data receiving callback
+    error_handler,  // error handler, e.g., keep alive probed connection failure
     &response);     // any argument that will be passed in new context creation callback.
 ```
 For simple usage, please refer to test program, [tcp_server_test.c](https://github.com/yhyu/tcp_server_c/blob/master/tcp_server_test.c).
